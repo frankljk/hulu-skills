@@ -1,0 +1,54 @@
+name: skill-smoke
+
+# 每周一 09:17（北京时间）自动冒烟：示例 MPN 与匿名端点挂了要立刻发现——
+# 死示例比没示例更伤信誉。也可手动 workflow_dispatch 触发。
+# ⚠️ schedule 暂缓启用：线上匿名档未开（huluic-cn todo #47），开启后取消下方注释。
+
+on:
+  # schedule:
+  #   - cron: '17 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: part.sh 匿名直查（Markdown）
+        run: |
+          out="$(bash skills/hulu/scripts/part.sh STM32F103C8T6)"
+          echo "$out" | head -n 20
+          echo "$out" | grep -q 'STM32F103C8T6'
+
+      - name: part.sh 搜索兜底 + JSON envelope
+        run: |
+          out="$(bash skills/hulu/scripts/part.sh STM32F103 --json)"
+          echo "$out" | head -c 600
+          echo "$out" | grep -q '"success":true'
+
+      - name: search 端点匿名 curl
+        run: |
+          curl -fsS -H 'Accept: application/json' \
+            https://r.huluic.cn/v2/search/STM32F103 | grep -q '"success":true'
+
+      - name: offers.sh 未配置 Key 应明确失败（退出码 3）
+        run: |
+          rc=0
+          bash skills/hulu/scripts/offers.sh STM32F103C8T6 || rc=$?
+          if [ "$rc" -ne 3 ]; then
+            echo "预期退出码 3，实际 $rc"; exit 1
+          fi
+
+      - name: 失败时开 issue
+        if: failure()
+        run: |
+          gh issue create \
+            --title "skill 冒烟失败 $(date +%F)" \
+            --body "每周冒烟未通过：示例 MPN 或匿名端点不可用，请检查 r.huluic.cn 线上状态与本仓库示例。" \
+            --label smoke || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

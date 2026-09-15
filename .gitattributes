@@ -1,0 +1,2 @@
+# shell 脚本必须 LF 行尾，否则 bash 报 "bad interpreter: /usr/bin/env bash\r"
+*.sh text eol=lf
