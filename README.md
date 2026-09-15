@@ -51,6 +51,63 @@ bash skills/hulu/scripts/read_offer.sh "https://www.example-mall.com/product/123
 - 429 限流时脚本按 `Retry-After` / `X-RateLimit-Reset` 自动等待并重试一次。
 - 环境变量：`HULUIC_KEY`（API Key）、`HULUIC_API_BASE`（默认 `https://r.huluic.cn`）。
 
+## 不想装？用 MCP
+
+同一个数据面还有一个 Remote MCP Server（Streamable HTTP，无状态）——填一个 URL 即可，零安装：
+
+```
+https://r.huluic.cn/mcp
+```
+
+5 个工具与 v2 端点一一对应：`search_parts` / `get_part` / `get_manufacturer`（匿名可用）、`get_offers` / `read_offer_url`（需 Key，在客户端配置里带 `Authorization: Bearer hulu_sk_...` 头）。
+
+<details>
+<summary>Claude Desktop（Settings → Connectors → Add custom connector）</summary>
+
+```json
+{
+  "mcpServers": {
+    "huluic": {
+      "type": "http",
+      "url": "https://r.huluic.cn/mcp"
+    }
+  }
+}
+```
+
+需 Key 的工具：在 connector 配置里添加请求头 `Authorization: Bearer hulu_sk_...`。
+
+</details>
+
+<details>
+<summary>Codex CLI（~/.codex/config.toml）</summary>
+
+```toml
+[mcp_servers.huluic]
+url = "https://r.huluic.cn/mcp"
+
+# 需要 Key 的工具时取消注释：
+# [mcp_servers.huluic.http_headers]
+# Authorization = "Bearer hulu_sk_xxxxxxxx"
+```
+
+</details>
+
+<details>
+<summary>Cursor（Settings → MCP → Add new global MCP server）</summary>
+
+```json
+{
+  "mcpServers": {
+    "huluic": {
+      "url": "https://r.huluic.cn/mcp"
+    }
+  }
+}
+```
+
+</details>
+
 ## 仓库结构
 
 ```
