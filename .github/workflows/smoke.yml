@@ -2,11 +2,10 @@ name: skill-smoke
 
 # 每周一 09:17（北京时间）自动冒烟：示例 MPN 与匿名端点挂了要立刻发现——
 # 死示例比没示例更伤信誉。也可手动 workflow_dispatch 触发。
-# ⚠️ schedule 暂缓启用：线上匿名档未开（huluic-cn todo #47），开启后取消下方注释。
 
 on:
-  # schedule:
-  #   - cron: '17 1 * * 1'
+  schedule:
+    - cron: '17 1 * * 1'
   workflow_dispatch:
 
 permissions:

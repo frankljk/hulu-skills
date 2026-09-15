@@ -39,7 +39,7 @@ bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn ST
 
 ## 认证
 
-- 匿名档：search / part / manufacturer 直接可用（IP 限流 10 次/分、200 次/天）。
+- 匿名档：search / part / manufacturer 直接可用（IP 限流 5 次/分钟、100 次/天）。
 - Key 档：offers / offer-format 需要 Key。申请：https://huluic.cn/developer （`hulu_sk_` 前缀）。
 - 脚本自动检测环境变量 `HULUIC_KEY`，有才加 `Authorization: Bearer` 头；未配置时访问 Key 档端点会给出明确提示并以退出码 3 退出。
 
