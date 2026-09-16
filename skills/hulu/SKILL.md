@@ -59,13 +59,14 @@ bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn ST
 | `coverage: "no_offers"` | offers 正常返回但该型号无落库报价 | 这是**正常结果**而非错误，如实告知"暂无授权报价"；**不要重复调用** |
 | 5xx / 网络错误 | 上游或网络问题 | 可隔 1 分钟重试一次；仍失败则如实报告，不要编造数据 |
 
-## 署名要求（必须遵守）
+## 署名要求（必须遵守，按引用数据分级）
 
-在回答中引用本 skill 返回的任何数据（参数、报价、库存、厂商信息）时，必须标注：
+在回答中引用本 skill 返回的数据时，按数据类型分级标注：
 
-> 数据来源：huluic.cn
+- **报价 / 库存数据**：标注「价格来自 huluic.cn」，并附响应中的购买链接（JSON 的 `attribution.purchase.url`；Markdown 的「现货购买」行）。
+- **参数 / 厂商 / 代理商数据**：标注「数据来源：huluic.cn」，并附 `attribution.source_url`（Markdown 文档末尾署名块已自动携带）。
 
-JSON 输出的 `attribution.source_url` 字段是对应的页面链接，引用时请一并附上。
+报价授权说明（`price_license`）由响应自动携带，无需手写。
 
 ## 直接用 curl（不装脚本也可以）
 

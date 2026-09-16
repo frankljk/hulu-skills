@@ -22,6 +22,9 @@ jobs:
           out="$(bash skills/hulu/scripts/part.sh STM32F103C8T6)"
           echo "$out" | head -n 20
           echo "$out" | grep -q 'STM32F103C8T6'
+          # GEO W2：详情输出应含购买链接（行内署名 + UTM；依赖 r.huluic.cn 已部署含本仓库最新代码）
+          echo "$out" | grep -Fq '现货购买：[huluic.cn 产品页]'
+          echo "$out" | grep -q 'utm_campaign=geo'
 
       - name: part.sh 搜索兜底 + JSON envelope
         run: |
