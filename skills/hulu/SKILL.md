@@ -15,10 +15,12 @@ description: 查询电子元器件的参数、实时报价、库存、厂商信�
 | 你手里有什么 | 你想要什么 | 用哪个 | 鉴权 |
 |---|---|---|---|
 | 商品页 URL | 结构化报价（价格/库存/MOQ/阶梯价） | `scripts/read_offer.sh <url> [--mpn 型号]` | 需 Key |
-| 型号（MPN） | 实时报价、库存、阶梯价 | `scripts/offers.sh <mpn>` | 需 Key |
+| 型号（MPN） | 落库报价快照（秒回） | `scripts/offers.sh <mpn>` | 需 Key |
+| 型号（MPN） | 多渠道**实时**报价（20+ 家，30~120s 流式） | `scripts/offers.sh <mpn> --live` | 需 Key |
 | 型号或关键词 | 参数、厂商、分类、数据手册链接 | `scripts/part.sh <mpn或关键词>` | 匿名可用 |
 | 模糊关键词 | 浏览候选型号列表 | `curl https://r.huluic.cn/v2/search/<关键词>`（或 part.sh，404 时自动搜索兜底） | 匿名可用 |
 | 厂商 mrf 编码（如 ti、st、adi） | 厂商介绍、产品线、分类 | `curl https://r.huluic.cn/v2/manufacturer/<id>` | 匿名可用 |
+| — | 渠道档案（59 渠道执行形态/品类标签/登录要求） | `curl https://r.huluic.cn/v2/channels` | 匿名可用 |
 
 ## 用法（copy-paste 级）
 
@@ -26,9 +28,13 @@ description: 查询电子元器件的参数、实时报价、库存、厂商信�
 # 1) 型号 → 参数（匿名，无需任何配置）
 bash scripts/part.sh STM32F103C8T6
 
-# 2) 型号 → 实时报价（需 HULUIC_KEY）
+# 2) 型号 → 落库报价快照（需 HULUIC_KEY）
 export HULUIC_KEY=hulu_sk_xxxxxxxx
 bash scripts/offers.sh STM32F103C8T6
+
+# 2b) 型号 → 多渠道实时报价（SSE 长流 30~120s；渠道进度走 stderr，汇总 JSON 走 stdout）
+bash scripts/offers.sh LM358 --live
+# 只搜指定渠道：bash scripts/offers.sh LM358 --live --channels digikey,mouser
 
 # 3) 商品页 URL → 结构化 Offer（需 HULUIC_KEY；可加 --mpn 做型号一致性校验）
 bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn STM32F103C8T6
@@ -39,8 +45,8 @@ bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn ST
 
 ## 认证
 
-- 匿名档：search / part / manufacturer 直接可用（IP 限流 5 次/分钟、100 次/天）。
-- Key 档：offers / offer-format 需要 Key。申请：https://huluic.cn/developer （`hulu_sk_` 前缀）。
+- 匿名档：search / part / manufacturer / channels 直接可用（IP 限流 5 次/分钟、100 次/天）。
+- Key 档：offers / offer-format / offers-live 需要 Key。申请：https://huluic.cn/developer （`hulu_sk_` 前缀）。offers-live 实时搜索起步 100 次/天。
 - 脚本自动检测环境变量 `HULUIC_KEY`，有才加 `Authorization: Bearer` 头；未配置时访问 Key 档端点会给出明确提示并以退出码 3 退出。
 
 ## 重要概念：onepartno
@@ -57,6 +63,7 @@ bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn ST
 | 429 | 触发限流 | 脚本已按 `Retry-After` / `X-RateLimit-Reset` 自动等待并重试一次；仍失败则告知用户已达限额，**不要循环重试** |
 | 404 | 型号/厂商不存在，或 part.sh 搜索兜底也无结果 | 换关键词重查；不要重复同一请求 |
 | `coverage: "no_offers"` | offers 正常返回但该型号无落库报价 | 这是**正常结果**而非错误，如实告知"暂无授权报价"；**不要重复调用** |
+| --live 的 SSE `error` 事件 | 搜索中途失败（大脑不可达等） | 如实报告 code/message；渠道级 error/need_login 属常态，done 到达即成功 |
 | 5xx / 网络错误 | 上游或网络问题 | 可隔 1 分钟重试一次；仍失败则如实报告，不要编造数据 |
 
 ## 署名要求（必须遵守，按引用数据分级）
@@ -74,7 +81,10 @@ bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn ST
 curl "https://r.huluic.cn/v2/search/STM32F103"                      # 搜索（匿名）
 curl "https://r.huluic.cn/v2/part/{onepartno}"                      # 参数（匿名）
 curl -H "Authorization: Bearer $HULUIC_KEY" \
-     "https://r.huluic.cn/v2/offers/STM32F103C8T6"                  # 报价（Key）
+     "https://r.huluic.cn/v2/offers/STM32F103C8T6"                  # 落库报价（Key）
+curl -N -H "Authorization: Bearer $HULUIC_KEY" \
+     "https://r.huluic.cn/v2/offers/live/LM358"                     # 实时报价 SSE（Key）
+curl "https://r.huluic.cn/v2/channels"                              # 渠道档案（匿名）
 curl -H "Authorization: Bearer $HULUIC_KEY" \
      "https://r.huluic.cn/v2/offer/https%3A%2F%2Fexample.com%2Fp%2F1?mpn=STM32F103C8T6"  # URL→Offer（Key）
 ```

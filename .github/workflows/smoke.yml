@@ -37,6 +37,28 @@ jobs:
           curl -fsS -H 'Accept: application/json' \
             https://r.huluic.cn/v2/search/STM32F103 | grep -q '"success":true'
 
+      - name: /v2/channels 渠道档案匿名 curl（59 档案）
+        run: |
+          curl -fsS -H 'Accept: application/json' \
+            https://r.huluic.cn/v2/channels | jq -e '.success == true and .data.total >= 50 and (.data.profiles[0].categoryTags != null)'
+
+      - name: offers.sh --live 全链路（LM358 钉子料，需 secrets.HULUIC_SMOKE_KEY）
+        env:
+          HULUIC_KEY: ${{ secrets.HULUIC_SMOKE_KEY }}
+        run: |
+          if [ -z "${HULUIC_KEY:-}" ]; then
+            echo "跳过：未配置 secrets.HULUIC_SMOKE_KEY（配置后本步骤自动生效）"
+            exit 0
+          fi
+          # LM358 为必有库存的钉子料：offer_count 应为正（区分“渠道坏了”与“本来没货”）
+          out="$(bash skills/hulu/scripts/offers.sh LM358 --live 2>live-progress.log)"
+          echo "$out" | head -c 800; echo
+          echo "$out" | jq -e '.offer_count > 0'
+          echo "$out" | jq -e '.summary.channelsSucceeded >= 1'
+          echo "$out" | jq -e '.attribution.price_license | length > 0'
+          # stderr 应含渠道进度（[done] xxx n 条）
+          grep -q '\[done\]' live-progress.log || { cat live-progress.log; exit 1; }
+
       - name: offers.sh 未配置 Key 应明确失败（退出码 3）
         run: |
           rc=0
