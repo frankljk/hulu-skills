@@ -19,7 +19,7 @@ description: 查询电子元器件的参数、实时报价、库存、厂商信�
 | 型号（MPN） | 多渠道**实时**报价（20+ 家，30~120s 流式） | `scripts/offers.sh <mpn> --live` | 需 Key |
 | 型号或关键词 | 参数、厂商、分类、数据手册链接 | `scripts/part.sh <mpn或关键词>` | 匿名可用 |
 | 模糊关键词 | 浏览候选型号列表 | `curl https://r.huluic.cn/v2/search/<关键词>`（或 part.sh，404 时自动搜索兜底） | 匿名可用 |
-| 厂商 mrf 编码（如 ti、st、adi） | 厂商介绍、产品线、分类 | `curl https://r.huluic.cn/v2/manufacturer/<id>` | 匿名可用 |
+| 厂商 mrf 编码（如 ti、stm、nxp；取自元件详情的 `manufacturer_code`） | 厂商介绍、产品线、分类 | `curl https://r.huluic.cn/v2/manufacturer/<id>` | 匿名可用 |
 | — | 渠道档案（59 渠道执行形态/品类标签/登录要求） | `curl https://r.huluic.cn/v2/channels` | 匿名可用 |
 
 ## 用法（copy-paste 级）
