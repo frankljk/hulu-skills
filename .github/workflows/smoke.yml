@@ -56,9 +56,8 @@ jobs:
           echo "$out" | jq -e '.offer_count > 0'
           echo "$out" | jq -e '.summary.channelsSucceeded >= 1'
           echo "$out" | jq -e '.attribution.price_license | length > 0'
-          # stderr 应含渠道进度事件流（status: running → done 的原始事件 JSON）
-          grep -q '"status":"running"' live-progress.log || { cat live-progress.log; exit 1; }
-          grep -q '"status":"done"' live-progress.log || { cat live-progress.log; exit 1; }
+          # stderr 应含渠道进度（[done] xxx n 条）
+          grep -q '\[done\]' live-progress.log || { cat live-progress.log; exit 1; }
 
       - name: offers.sh 未配置 Key 应明确失败（退出码 3）
         run: |
