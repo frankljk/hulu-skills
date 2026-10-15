@@ -6,6 +6,7 @@
 #   本地（克隆后）: ./install.sh
 #
 # 默认安装到所有已知 Agent 技能目录（不存在则创建）：
+#   ~/.agents/skills/hulu   ← Codex 桌面版 / Agents 个人技能目录
 #   ~/.codex/skills/hulu
 #   ~/.claude/skills/hulu
 # 自定义目标：SKILLS_DIR=/path/to/skills ./install.sh（只装到该目录）
@@ -48,19 +49,24 @@ install_to() {
 }
 
 # ---- 2) 安装到目标目录 ----
+FIRST_DIR=""
 if [ -n "${SKILLS_DIR:-}" ]; then
   install_to "$SKILLS_DIR"
+  FIRST_DIR="$SKILLS_DIR"
 else
-  install_to "$HOME/.codex/skills"
-  install_to "$HOME/.claude/skills"
+  # 顺序即优先级：Codex 桌面版读 ~/.agents/skills，CLI 读 ~/.codex/skills
+  for base in "$HOME/.agents/skills" "$HOME/.codex/skills" "$HOME/.claude/skills"; do
+    install_to "$base"
+    [ -n "$FIRST_DIR" ] || FIRST_DIR="$base"
+  done
 fi
 
-cat <<'EOF'
+cat <<EOF
 
 安装完成 / Done.
 
 快速验证 / Verify（匿名可用，无需 Key）:
-  bash ~/.claude/skills/hulu/scripts/part.sh STM32F103C8T6
+  bash ${FIRST_DIR}/hulu/scripts/part.sh STM32F103C8T6
 
 报价类端点需要 API Key（https://huluic.cn/developer 申请）:
   export HULUIC_KEY=hulu_sk_...

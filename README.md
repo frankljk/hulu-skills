@@ -47,7 +47,8 @@ bash skills/hulu/scripts/read_offer.sh "https://www.example-mall.com/product/123
 ```
 
 - 所有脚本默认输出 **Markdown**（Agent 读取最省 token）；加 `--json` 切 JSON。
-- 零依赖：只用到 `bash` + `curl`（不要求 jq）。
+- 零依赖：只用到 `bash` + `curl`（不要求 jq）。装了 `jq` 时 `--live` 的渠道进度会格式化成 `[done] 渠道名 N 条`，没装则打印原始事件 JSON，结果不受影响。
+- 实时报价是 SSE 长流：渠道进度走 stderr，汇总 JSON（summary + offers + attribution）走 stdout。
 - 429 限流时脚本按 `Retry-After` / `X-RateLimit-Reset` 自动等待并重试一次。
 - 环境变量：`HULUIC_KEY`（API Key）、`HULUIC_API_BASE`（默认 `https://r.huluic.cn`）。
 
@@ -59,7 +60,7 @@ bash skills/hulu/scripts/read_offer.sh "https://www.example-mall.com/product/123
 https://r.huluic.cn/mcp
 ```
 
-5 个工具与 v2 端点一一对应：`search_parts` / `get_part` / `get_manufacturer`（匿名可用）、`get_offers` / `read_offer_url`（需 Key，在客户端配置里带 `Authorization: Bearer hulu_sk_...` 头）。
+6 个工具与 v2 端点一一对应：`search_parts` / `get_part` / `get_manufacturer` / `get_distributor`（匿名可用）、`get_offers` / `read_offer_url`（需 Key，在客户端配置里带 `Authorization: Bearer hulu_sk_...` 头）。
 
 <details>
 <summary>Claude Desktop（Settings → Connectors → Add custom connector）</summary>

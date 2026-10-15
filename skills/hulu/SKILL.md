@@ -35,6 +35,7 @@ bash scripts/offers.sh STM32F103C8T6
 # 2b) 型号 → 多渠道实时报价（SSE 长流 30~120s；渠道进度走 stderr，汇总 JSON 走 stdout）
 bash scripts/offers.sh LM358 --live
 # 只搜指定渠道：bash scripts/offers.sh LM358 --live --channels digikey,mouser
+# 注：装了 jq 时进度显示为 `[done] 渠道名 N 条`，未装则打印原始事件 JSON（结果不受影响）
 
 # 3) 商品页 URL → 结构化 Offer（需 HULUIC_KEY；可加 --mpn 做型号一致性校验）
 bash scripts/read_offer.sh "https://www.example-mall.com/product/12345" --mpn STM32F103C8T6

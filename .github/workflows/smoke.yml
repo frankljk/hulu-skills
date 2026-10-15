@@ -70,9 +70,11 @@ jobs:
       - name: 失败时开 issue
         if: failure()
         run: |
+          # label 不存在会让 gh issue create 直接失败，这里自建（幂等）
+          gh label create smoke --color FBCA04 --force || true
           gh issue create \
             --title "skill 冒烟失败 $(date +%F)" \
             --body "每周冒烟未通过：示例 MPN 或匿名端点不可用，请检查 r.huluic.cn 线上状态与本仓库示例。" \
-            --label smoke || true
+            --label smoke
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
